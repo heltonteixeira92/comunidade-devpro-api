@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 from django.core.paginator import Paginator
 from devpro.core.models import Author, Book
 from http import HTTPStatus
+from django.db.models import Q
 from django.shortcuts import resolve_url, get_object_or_404
 
 DEFAULT_PAGE_SIZE = 25
@@ -23,17 +24,9 @@ def authors(request):
 
     page = paginator.get_page(page_number)
 
-    authors = [
-        a.to_dict() for a in page.object_list
-    ]
     # return HttpResponse(json.dumps(authors), content_type='application/json')
 
-    return JsonResponse({
-        'data': authors,
-        'count': paginator.count,
-        'current_page': page_number,
-        'num_pages': paginator.num_pages
-    })
+    return JsonResponse(page2dict(page))
 
 
 def book_list_create(request):
@@ -55,24 +48,25 @@ def book_list_create(request):
         page_number = request.GET.get('page', 1)
         page_size = request.GET.get('page_size', DEFAULT_PAGE_SIZE)
 
-        queryset = Book.objects.all()
+        filters = Q()
+        # := walrus operator (atribui e avalia a expressão ao mesmo tempo)
+        if publication_year := request.GET.get('publication_year'):
+            filters &= Q(publication_year=publication_year)
 
+        if author_id := request.GET.get('author'):
+            filters &= Q(authors=author_id)
+
+        queryset = Book.objects.filter(filters).order_by('name')
         paginator = Paginator(queryset, per_page=page_size)
-
         page = paginator.get_page(page_number)
 
-
-        # return HttpResponse(json.dumps(authors), content_type='application/json')
-
-        return JsonResponse({
-            'data': [a.to_dict() for a in page.object_list],
-            'count': paginator.count,
-            'current_page': page_number,
-            'num_pages': paginator.num_pages
-        })
-
-    # return JsonResponse(data, safe=False)
-
+        # return JsonResponse({
+        #     'data': [a.to_dict() for a in page.object_list],
+        #     'count': paginator.count,
+        #     'current_page': page_number,
+        #     'num_pages': paginator.num_pages
+        # })
+        return JsonResponse(page2dict(page))
 
 # def book_read_update_delete(request, pk):
 #     book = get_object_or_404(Book, pk=pk)
@@ -132,3 +126,14 @@ def _book_delete(request, book):
     book.delete()
 
     return HttpResponse(status=HTTPStatus.NO_CONTENT)
+
+
+def page2dict(page):
+    return {
+            'data': [a.to_dict() for a in page],
+            'count': page.paginator.count,
+            'current_page': page.number,
+            'num_pages': page.paginator.num_pages,
+        }
+
+# TODO: Validações no forms para tratar os tipos de dados que vão chegar pelo payload

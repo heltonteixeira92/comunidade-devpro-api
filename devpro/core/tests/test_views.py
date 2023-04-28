@@ -137,3 +137,52 @@ def test_list_books(client, book):
     assert response.status_code == HTTPStatus.OK
     assert response.json()['data'] == [book.to_dict()]
 
+
+def test_list_books_by_publication(client, book):
+    book_2 = Book.objects.create(
+        name='Python Cookbook',
+        edition=2,
+        publication_year=2016,
+    )
+    book_2.authors.add(Author.objects.create(name='David Beazley'))
+
+    response = client.get(
+        '/api/books/', data={'publication_year': book.publication_year}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()['data'] == [book.to_dict()]
+
+
+def test_list_books_by_author(client, book):
+    author = Author.objects.create(name='David Beazley')
+    book_2 = Book.objects.create(
+        name='Python Cookbook',
+        edition=2,
+        publication_year=2016,
+    )
+    book_2.authors.add(author)
+
+    response = client.get(
+        '/api/books/', data={'author': author.id}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()['data'] == [book_2.to_dict()]
+
+
+def test_list_books_by_author_and_publication_year(client, book):
+    author = Author.objects.create(name='David Beazley')
+    book_2 = Book.objects.create(
+        name='Python Cookbook',
+        edition=2,
+        publication_year=2016,
+    )
+    book_2.authors.add(author)
+
+    response = client.get(
+        '/api/books/', data={'author': author.id, 'publication_year': 2016}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()['data'] == [book_2.to_dict()]
