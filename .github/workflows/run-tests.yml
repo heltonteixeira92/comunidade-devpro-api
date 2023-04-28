@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        run: actions/checkout@v3
+        uses: actions/checkout@v3
       - name: Update
         run: sudo apt update
       - name: Install pip
