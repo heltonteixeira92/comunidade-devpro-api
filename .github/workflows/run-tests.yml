@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Update
         run: sudo apt update
+      - name: Check out repository code
+        run: actions/checkout@v3
       - name: Install pip
         run: sudo apt install python3-pip
       - name: Install requirements
