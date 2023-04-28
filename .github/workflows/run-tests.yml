@@ -21,6 +21,6 @@ jobs:
         run: pip install -r requirements.txt
       - name: Execute tests
         env:
-          DJANGO_SETTINGS_MODULE: devpro.core.settings
+          DJANGO_SETTINGS_MODULE: devpro.settings
         run: pytest --nomigrations
 
