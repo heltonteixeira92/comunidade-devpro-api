@@ -11,10 +11,10 @@ jobs:
     name: Install requirements and execute tests
     runs-on: ubuntu-latest
     steps:
-      - name: Update
-        run: sudo apt update
       - name: Check out repository code
         run: actions/checkout@v3
+      - name: Update
+        run: sudo apt update
       - name: Install pip
         run: sudo apt install python3-pip
       - name: Install requirements
